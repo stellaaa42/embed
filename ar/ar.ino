@@ -1,36 +1,29 @@
-// Stella 9.4.2025
-const int button1Pin = 2;
-const int led1Pin = 9;
-
-const int button2Pin = 4;
-const int led2Pin = 12;
+const int buttonPin = 2;       // Nappi
+const int led1 = 13;           // Ledi 1
+const int led2 = 12;           // Ledi 2
+const int led3 = 11;           // Ledi 3
 
 void setup() {
-  pinMode(button1Pin, INPUT);
-  pinMode(led1Pin, OUTPUT);
-
-  pinMode(button2Pin, INPUT);
-  pinMode(led2Pin, OUTPUT);
+  pinMode(buttonPin, INPUT);
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(led3, OUTPUT);
 }
 
 void loop() {
-  // Lue nappien tilat
-  int button1State = digitalRead(button1Pin);
-  int button2State = digitalRead(button2Pin);
+  int buttonState = digitalRead(buttonPin);
 
-  // Jos nappia 1 painetaan, vilkuta ledi 1
-  if (button1State == HIGH) {
-    digitalWrite(led1Pin, HIGH);
+  if (buttonState == HIGH) {
+    // Sytytä kaikki kolme lediä
+    digitalWrite(led1, HIGH);
+    digitalWrite(led2, HIGH);
+    digitalWrite(led3, HIGH);
     delay(200);
-    digitalWrite(led1Pin, LOW);
-    delay(200);
-  }
 
-  // Jos nappia 2 painetaan, vilkuta ledi 2
-  if (button2State == HIGH) {
-    digitalWrite(led2Pin, HIGH);
-    delay(200);
-    digitalWrite(led2Pin, LOW);
+    // Sammuta kaikki
+    digitalWrite(led1, LOW);
+    digitalWrite(led2, LOW);
+    digitalWrite(led3, LOW);
     delay(200);
   }
 }
