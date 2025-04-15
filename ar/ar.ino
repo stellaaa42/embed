@@ -1,43 +1,26 @@
-int ledPin1 = 9;
-int ledPin2 = 10;
-int buttonPin = 2;
+// stella 15.4.2025
+const byte ledPin[] = {7, 8, 9, 10, 11, 12, 13}; // A–G (järjestyksessä)
 
-int brightness = 0;
-int fadeAmount = 10;
-
-int buttonState = 0;
-int lastButtonState = HIGH;
+byte i = 0; // for-loopin muuttuja
 
 void setup() {
-  pinMode(ledPin1, OUTPUT);
-  pinMode(ledPin2, OUTPUT);
-  pinMode(buttonPin, INPUT_PULLUP); // Käytetään sisäistä pullupia
+  // Määritellään pinneille OUTPUT-tila
+  for (i = 0; i < 7; i++) {
+    pinMode(ledPin[i], OUTPUT);
+  }
 
-  brightness = 0;
-  buttonState = 0;
+  // Näytetään numero 3: segmentit a, b, c, d ja g päälle (HIGH)
+  digitalWrite(ledPin[0], HIGH); // a
+  digitalWrite(ledPin[1], HIGH); // b
+  digitalWrite(ledPin[2], HIGH); // c
+  digitalWrite(ledPin[3], HIGH); // d
+  digitalWrite(ledPin[6], HIGH); // g
 
-  Serial.begin(9600);
+  // Loput segmentit pois (LOW): e ja f
+  digitalWrite(ledPin[4], LOW);  // e
+  digitalWrite(ledPin[5], LOW);  // f
 }
 
 void loop() {
-  buttonState = digitalRead(buttonPin);
-
-  // Tarkistetaan onko nappia juuri painettu (reunatunnistus)
-  if (lastButtonState == HIGH && buttonState == LOW) {
-    brightness += fadeAmount;
-
-    if (brightness > 255) {
-      brightness = 0; // Palautetaan nollaan, kun yli maksimin
-    }
-
-    analogWrite(ledPin1, brightness);
-    analogWrite(ledPin2, brightness);
-
-    Serial.print("PWM-arvo (brightness): ");
-    Serial.println(brightness);
-
-    delay(200); // Debounce-viive
-  }
-
-  lastButtonState = buttonState;
+  // Ei toistoa tarvitse
 }
