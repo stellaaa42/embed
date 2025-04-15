@@ -1,27 +1,78 @@
-byte sirros = 0b000001; // Alustetaan: PB0 (pinni 8) on päällä
-bool suunta = true;     // true = oikealle (PB0 -> PB5), false = vasemmalle (PB5 -> PB0)
+const byte ledPin[] = {7, 8, 9, 10, 11, 12, 13};
+const byte nappiPin = 2;
 
-void setup()
-{
-  DDRB = B00111111;   // Asetetaan Uno pinnit 8–13 (PB0–PB5) output-tilaan
-  PORTB = B00000000;  // Sammutetaan kaikki LEDit aluksi
+bool nappiPainettu = false;
+
+void setup() {
+  for (byte i = 0; i < 7; i++) {
+    pinMode(ledPin[i], OUTPUT);
+  }
+
+  pinMode(nappiPin, INPUT_PULLUP);
+  Serial.begin(9600);
+  randomSeed(analogRead(A0));
 }
 
-void loop()
-{
-  PORTB = sirros;     // Asetetaan yksittäinen LED päälle
-  delay(200);
+void loop() {
+  if (digitalRead(nappiPin) == LOW && !nappiPainettu) {
+    nappiPainettu = true;
 
-  // Siirretään bitti suuntaan
-  if (suunta) {
-    sirros <<= 1;     // Siirrä vasemmalle (PB0 -> PB5)
-    if (sirros == 0b100000) {
-      suunta = false; // Vaihda suunta kun päästy PB5:een
-    }
-  } else {
-    sirros >>= 1;     // Siirrä oikealle (PB5 -> PB0)
-    if (sirros == 0b000001) {
-      suunta = true;  // Vaihda suunta kun päästy takaisin PB0:aan
-    }
+    int luku = random(1, 7);
+    Serial.println(luku);
+    naytaNumero(luku);
+
+    delay(200);
+  }
+
+  if (digitalRead(nappiPin) == HIGH && nappiPainettu) {
+    nappiPainettu = false;
+  }
+}
+
+void naytaNumero(int numero) {
+  for (byte i = 0; i < 7; i++) {
+    digitalWrite(ledPin[i], LOW);
+  }
+
+  switch (numero) {
+    case 1:
+      digitalWrite(ledPin[1], HIGH);
+      digitalWrite(ledPin[2], HIGH);
+      break;
+    case 2:
+      digitalWrite(ledPin[0], HIGH);
+      digitalWrite(ledPin[1], HIGH);
+      digitalWrite(ledPin[6], HIGH);
+      digitalWrite(ledPin[4], HIGH);
+      digitalWrite(ledPin[3], HIGH);
+      break;
+    case 3:
+      digitalWrite(ledPin[0], HIGH);
+      digitalWrite(ledPin[1], HIGH);
+      digitalWrite(ledPin[2], HIGH);
+      digitalWrite(ledPin[3], HIGH);
+      digitalWrite(ledPin[6], HIGH);
+      break;
+    case 4:
+      digitalWrite(ledPin[1], HIGH);
+      digitalWrite(ledPin[2], HIGH);
+      digitalWrite(ledPin[5], HIGH);
+      digitalWrite(ledPin[6], HIGH);
+      break;
+    case 5:
+      digitalWrite(ledPin[0], HIGH);
+      digitalWrite(ledPin[2], HIGH);
+      digitalWrite(ledPin[3], HIGH);
+      digitalWrite(ledPin[5], HIGH);
+      digitalWrite(ledPin[6], HIGH);
+      break;
+    case 6:
+      digitalWrite(ledPin[0], HIGH);
+      digitalWrite(ledPin[2], HIGH);
+      digitalWrite(ledPin[3], HIGH);
+      digitalWrite(ledPin[4], HIGH);
+      digitalWrite(ledPin[5], HIGH);
+      digitalWrite(ledPin[6], HIGH);
+      break;
   }
 }
