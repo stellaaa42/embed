@@ -2,7 +2,10 @@
 
 Mac 
 
-arduino-cli compile --fqbn arduino:avr:uno ar 
+arduino-cli compile \
+    --fqbn arduino:avr:uno \
+    --build-path ./build \
+    ar \
 arduino-cli upload -p /dev/cu.usbmodem14101 --fqbn arduino:avr:uno ar 
 
 arduino-cli monitor -p /dev/cu.usbmodem14101 
