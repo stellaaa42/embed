@@ -1,5 +1,3 @@
- 
-
 Mac 
 
 arduino-cli compile \
