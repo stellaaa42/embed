@@ -31,14 +31,18 @@
 *.out
 *.app
 
-controller/controller-backups
+*backups
+controller/_autosave-controller.kicad_sch
+avr/~$avr.pcb.inf
 
 *~
+*#
 *.bak
 *.bck
 *.tmp
 *.autosave
 *.save
+
 
 # User-specific files
 *.kicad_prl
