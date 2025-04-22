@@ -30,3 +30,72 @@
 *.exe
 *.out
 *.app
+
+controller/controller-backups
+
+*~
+*.bak
+*.bck
+*.tmp
+*.autosave
+*.save
+
+# User-specific files
+*.kicad_prl
+*.net
+*.xml
+*.dcm
+
+# Gerber, drill, and fabrication outputs
+*.gbr
+*.gtp
+*.gto
+*.gts
+*.gbl
+*.gbs
+*.gbo
+*.gml
+*.gm1
+*.drl
+*.zip
+fabrication_outputs/
+gerbers/
+*.xln
+*.csv
+
+# 3D export
+*.step
+*.stp
+*.wrl
+
+# Simulation output (Eeschema simulator)
+*.raw
+*.plt
+*.ac*
+*.log
+
+# Cache
+*.kicad_sch-bak
+*.kicad_pcb-bak
+*-backups/
+fp-info-cache
+__pycache__/
+
+# Project-specific ignore
+fp-info-cache
+*.swp
+*.swo
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Ignore BOM files (if generated and not maintained manually)
+*.csv
+*.tsv
+
+# VSCode (optional, if you use it)
+.vscode/
+
+# Ignore build dirs, adjust if your own flow
+build/
