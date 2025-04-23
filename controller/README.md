@@ -1,46 +1,17 @@
 circuit~relay H bridge:
-    DPDT relay actuator wiring
-        +12V
-           |
-           |
-     +-----+-----+
-     |           |
-   [Relay1]   [Relay2]
-     |           |
-    NC          NO
-     |           |
-     |---MOTOR---|
-     |           |
-    NO          NC
-     |           |
-    GND         GND
-1. When **Relay 1** is energized, it switches Motor input 1 from NC (+12V) to NO (GND).
-2. When **Relay 2** is energized, it switches Motor input 2 from NC (GND) to NO (+12V).
+    DPDT relay H Bridge
+    +12V -----(fuse)-------+
+    
+    +12V --(rly+)--(Cathode)--(D1N5819)--(Anode+)--(rly-)--SW--GND
+                    +12V--(r1-nc)--m+ -->
+                    GND--(r1-no)--m+   |left    --<
+                    GND--(r2-nc)--m- --<          |right
+                    +12V--(r2-no)--m-           -->
 
-    +12V -----(fuse 15A)-------+
-          |              |
-          |           .---+---.
-    cathode           | Relay1|
-    (diode)           '---+---'
-    anode                 |COM
-       |             +--+--+
-       |             |     |NO----> Motor A side
-     GND             NC     |
-                     |      |
-                     GND    |
-                            |
-                        .--+--.
-                        |Relay2|
-                        '--+--'
-                        |COM
-                        +--+--+
-                        |     |NO----> Motor B side
-                        NC     |
-                        |      |
-                        GND    |
-                            ...
-
-
+    +12V ---(r1-no)         (r2-nc) ------+
+                     Motor
+    GND ----(r1-nc)         (r2-no) ----GND
+    +12V ---(Cathode)---(D)---(Anode)---GND
 
     sim test:
         add an inductor (~1-5mH) and series resistor as load
