@@ -34,6 +34,7 @@
 *backups
 controller/_autosave-controller.kicad_sch
 avr/~$avr.pcb.inf
+avr/~$avr.sch.inf
 
 *~
 *#
