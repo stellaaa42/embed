@@ -1,0 +1,4 @@
+.subckt simple_motor + -
+Rload + N1 2
+Lmotor N1 - 10m
+.ends

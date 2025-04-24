@@ -1,0 +1,28 @@
+.subckt REL_DPDT8 1 2 3 4 5 6 7 8 params: Rcoil=720 Td=5m
+.param Lcoil Rcoil*Td
+.param Ion 9/Rcoil
+.param Ioff 1.2/Rcoil
+.param It (Ion+Ioff)/2
+.param Ih Ion-It
+
+Rcoil 1 coil_n Rcoil
+Lcoil coil_n 2 Lcoil
+Vmeasp coil_n sense 0
+Vmeasn sense coil_n 0
+Rpd1 1 pd Rcoil
+Rpd2 pd 2 1Meg
+Cpd pd 2 Td/Rcoil
+Dclamp coil_n 1 Dclmp
+.model Dclmp D(Ron=0.5 Roff=1Meg Vfwd=0.7)
+
+* Precomputed threshold currents
+* Ion = 9/Rcoil; Ioff = 1.2/Rcoil; It = (Ion+Ioff)/2; Ih = Ion-It
+.model SW_NO CSW(Ron=0.05 Roff=1e9 Ih=0.00541667 It=0.00708333)
+.model SW_NC CSW(Ron=1e9 Roff=0.05 Ih=0.00541667 It=-0.00708333)
+
+* Switches (control pins: NC then NO)
+S1 3 5 sense coil_n SW_NO
+S2 3 4 sense coil_n SW_NC
+S3 6 8 sense coil_n SW_NO
+S4 6 7 sense coil_n SW_NC
+.ends REL_DPDT8
