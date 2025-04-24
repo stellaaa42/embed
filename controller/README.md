@@ -53,8 +53,8 @@ circuit~mosfet H bridge:
              GND           GND           GND
 
     netlist:
+        Motor drive BTS7960
         Mosfet IRLZ44N 
-        Motor drive bts7960
         Gate resistors(10Ω – 100Ω 47Ω)
         Pull-down resistors(10kΩ)
         Flyback diodes IN5408/Schottky
