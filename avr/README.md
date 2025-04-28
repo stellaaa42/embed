@@ -10,3 +10,5 @@ Properties---Pad Stack
     Others -> Opposite Side Diameter: 75 
 
     Jumper -> End Diameter: 75mil
+    
+Tools---Options mm -> mil
