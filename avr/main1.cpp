@@ -6,7 +6,7 @@ int main(void)
 
 {
 
-	DDRB =0xFF; //B-port
+	DDRB =0xFF; //output
 
 	_delay_ms(200); //200ms
 
@@ -15,11 +15,11 @@ int main(void)
 
 	{
 
-		PORTB = 0b01010101;
+		PORTB = 0x55; // 0b01010101
 
 		_delay_ms(2000);
 
-		PORTB = 0b10101010;
+		PORTB = 0xAA; // 0b10101010
 
 		_delay_ms(2000);
 
