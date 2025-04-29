@@ -1,1 +1,28 @@
-#define F_CPU 1000000UL //M‰‰ritell‰‰n 1 MHz kellotaajuus prosessorille#include <avr/io.h> //Liitet‰‰n kirjasto ohjelmaan#include <util/delay.h> //Liitet‰‰n kirjasto ohjelmaanint main(void) //Aloitetaan p‰‰ohjelma{	DDRB =0xFF; // Alustetaan B-portin kaikki l‰hdˆiksi	_delay_ms(200); //odotellaan 200ms	while(1)	{		PORTB = 0b01010101; //porttiin B 0b00000000		_delay_ms(2000);		PORTB = 10101010; //porttiin B 0b11111111		_delay_ms(2000);	}}
+#define F_CPU 1000000UL //1 MHz kellotaajuus
+#include <avr/io.h> 
+#include <util/delay.h>
+
+int main(void)
+
+{
+
+	DDRB =0xFF; //B-port
+
+	_delay_ms(200); //200ms
+
+
+	while(1)
+
+	{
+
+		PORTB = 0b01010101;
+
+		_delay_ms(2000);
+
+		PORTB = 0b10101010;
+
+		_delay_ms(2000);
+
+	}
+
+}
