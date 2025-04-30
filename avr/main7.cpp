@@ -15,17 +15,15 @@ int main(void)
 
     while(1)
     {
-
         PORTB = luku; // Asetetaan portin B liittimien arvoiksi bittijono luku, LED syttyy sen mukaisesti
-        luku >>=1; // pyörimissuunta vaihtuu
+        luku >>=1
         
-        if (luku == 0x08)
-        luku = 0x00;
+        if (luku == 0x00)
+        luku = 0x08;
         
         _delay_ms(500);
         
     }
 }
 
-// if (luku ==0x08) luku = 0x00; 0000 1000 -> 0000 0000
-// kun 3 valo vielä päällä, sen jälkeen sammuttamalla kaikki ledit. 
+// 0x01-> 0x00 -> 0x08 0000 1000 -> 4 2 1... 

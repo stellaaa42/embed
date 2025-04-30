@@ -7,22 +7,21 @@ int main(void)
 {
     unsigned char napit;
 
-    DDRB = 0xFF;
-    PORTB = 0x00;
     DDRD = 0x00;
     PORTD = 0x00;
+    
+    DDRB = 0xFF;
+    PORTB = 0x00;
 
     while(1)
     {
         napit = PIND;
-        napit &= 0x0C;
-        napit >>=2; //00001100 -> 00000011
+        napit &= 0x0C; //0b1100
+        napit <<= 4; //00001100 -> 00000011
         PORTB = napit;
     }
 }
 
-// Ennen ledit syttyivät samoissa bittikohdissa kuin napit olivat PIND:ssä.
-// Nyt kun painat PD2, syttyy LED PORTB bit0:ssa, kun painat PD3, sytty LED PORTB bit1:ssä.
-// Jos painat molempia, molemmat ledit syttyvät bitti 0 ja 1.
-// <<=1 siirtää bittien arvot vasemmalle yhdella bitillä.
-// napit <<= 4 00001100 -> 11000000
+// >>=2 00001100 -> 00000011
+// <<=1 00001100 -> 00011000
+//  <<= 4 00001100 -> 11000000 to the leftmost

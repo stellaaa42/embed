@@ -6,44 +6,39 @@
 
 int main(void)
 {
-    unsigned char luku, suunta; //alustetaan muuttujat luku ja suunta
+    unsigned char luku, suunta;
 
-    DDRB=0xff; //portin B suunta ulos
-    PORTB=0xff; //portin kaikki bitit ykkösiä
-    _delay_ms(1000); //tässä viive ennen ohjelman aloittamista
+    DDRB = 0xff;
+    PORTB = 0xff;
+    _delay_ms(1000);
 
-    luku=0x01; //annetaan muuttujalle luku alkuarvo 0x01
-    suunta=0; //annetaan muuttujalle suunta arvo 0, oikealta vasemmalle
+    luku = 0x01;
+    suunta = 0;
 
     while(1)
     {
-        PORTB = luku;//portille B annetaan arvoksi muuttuja luku
-        if(suunta==1)
-
-            luku<<=1; /*jos muuttujan suunta arvo on 1, liikutetaan bittiä vasemmalle yhden bitin verran*/
+        PORTB = luku;
+        if(suunta == 1)
+            luku <<= 1;
         else
-            luku>>=1; /*jos muuttujan suunta arvo on 0, liikutetaan bittiä oikealle yhden bitin verran*/
+            luku >>= 1;
 
-        if(luku==0) //suoritetaan if-lause, kun muuttuja luku saa arvon 0
+        if(luku == 0)
         {
-            if(suunta==1)/*kun muuttujan suunta arvo on 1 (silloin kun
-            muuttujan luku arvo on 0)*/
+            if(suunta == 1)
             {
-                suunta=0;//muuttujalle suunta annetaan arvo 0
-                luku=0x80;//muuttujalle luku annetaan arvo 0x80
+                suunta = 0;
+                luku = 0x40;
             }
-
-            else /*kun muuttujan suunta arvo on 1 (silloin kun muuttujan luku arvo on 0)*/
+            else
             {
-                suunta=1; //muuttujalle suunta annetaan arvo 1
-                luku=0x01;//muuttujalle luku annetaan arvo 0x01
+                suunta = 1;
+                luku = 0x02;
             }
-
         }
         _delay_ms(200);
     }
-
 }
 
-// luku=0x80 -> luku=0x40 liike rajoittuu sisempiin ledeihin
-// luku=0x01 -> luku=0x02 välttää reunat
+// 0x80 -> 0x40 still shifting, no stop
+// 0x01 -> 0x02 

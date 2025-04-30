@@ -25,3 +25,6 @@ int main(void)
     return 0;
 
 }
+
+// 0-7 in binary --> lower 3 bit 
+// three rightmost bits/led 1, others 0
