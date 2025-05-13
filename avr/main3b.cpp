@@ -9,8 +9,7 @@
 #define S1 bit_is_set(PIND,2) 
 #define S3 bit_is_clear(PIND,4)
 
-int main(void) // Aloitetaan pääohjelma
-
+int main(void) 
 {
     DDRD=0x00; // input
     PORTD |= (1<<PD4); // pull-up
@@ -30,7 +29,7 @@ int main(void) // Aloitetaan pääohjelma
             _delay_ms(200);
         }
         
-        if(S3) // jos nappia 3 painetaan (PD4 pullupilla)
+        if(S3) 
         {
             PORTB = 0xFF;
             _delay_ms(200);
