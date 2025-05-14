@@ -31,13 +31,14 @@ int main(void)
 }
 
 /*
-a → PB0
-b → PB1
-c → PB2
-d → PB3
-e → PB4
-f → PB5
-g → PB6
+      attiny23
+a → PB0 -> pin12
+b → PB1 -> pin13
+c → PB2 -> pin14
+d → PB3 -> pin15
+e → PB4 -> pin16
+f → PB5 -> pin17
+g → PB6 -> pin18
 
      binary     hex
 1	00000110	0x06
