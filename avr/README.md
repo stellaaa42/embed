@@ -1,4 +1,4 @@
-## pad settings
+## PADS settings
 
 1mm = 40mils
 
