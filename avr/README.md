@@ -11,7 +11,7 @@ Edit Decal -> library -> /PartQuest /BGA7351B
                 Diameter: 75mil Drill Size: 37mil 
     Jumper -> End Diameter: 75mil
 
-## Setup---Design Rules
+## Setup -> Design Rules
     Trace width-> min:20 recommended:40 max:60 
     Clearance-> 17mil
     
