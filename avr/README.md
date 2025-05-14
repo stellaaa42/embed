@@ -2,6 +2,8 @@
 
 1mm = 40mils
 
+Edit Decal -> library -> /PartQuest /BGA7351B
+
 Setup---Design Rules
     Trace width-> min:20 recommended:40 max:60 
     Clearance-> 17mil
