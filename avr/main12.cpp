@@ -77,12 +77,12 @@ int main(void)
 
 /*
       attiny23
-s1->pd2 -> pin6
-a → PB0 -> pin12
-b → PB1 -> pin13
-c → PB2 -> pin14
-d → PB3 -> pin15
-e → PB4 -> pin16
-f → PB5 -> pin17
-g → PB6 -> pin18
+s1-> pd2 -> pin6
+a -> 7 → PB0 -> pin12
+b → 6 -> PB1 -> pin13
+c → 4 -> PB2 -> pin14
+d → 2 -> PB3 -> pin15
+e → 1 -> PB4 -> pin16
+f → 9 -> PB5 -> pin17
+g → 10 -> PB6 -> pin18
 */
