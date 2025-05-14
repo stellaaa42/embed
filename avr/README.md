@@ -1,25 +1,29 @@
-## PADS settings
+# PADS settings
 
 1mm = 40mils
 
 Edit Decal -> library -> /PartQuest /BGA7351B
 
-# Properties -> Pad Stack
+## Properties -> Pad Stack
     Power -> Opposite Side 
                 Diameter: 90mil Drill Size: 48mil  
     Others -> Opposite Side 
                 Diameter: 75mil Drill Size: 37mil 
     Jumper -> End Diameter: 75mil
 
-# Setup---Design Rules
+## Setup---Design Rules
     Trace width-> min:20 recommended:40 max:60 
     Clearance-> 17mil
     
-# Tools---Options mm -> mil
+Tools---Options mm -> mil
 
-## arduino-cli
 
-# Mac
+
+
+
+# arduino-cli
+
+## Mac
     arduino-cli compile
     --fqbn arduino:avr:uno
     --build-path ./build
@@ -33,7 +37,7 @@ Edit Decal -> library -> /PartQuest /BGA7351B
     arduino-cli core update-index
     arduino-cli core install arduino:avr
 
-# win
+## win
     .\arduino-cli.exe compile --fqbn arduino:avr:uno p1 --output-dir p1\build
     .\arduino-cli.exe upload -p COM7 --fqbn arduino:avr:uno --input-dir p1\build
     .\arduino-cli.exe compile --fqbn arduino:avr:uno p1
