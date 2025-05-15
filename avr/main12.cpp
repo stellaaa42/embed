@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #define S1 bit_is_clear(PIND, 2) // pull-up
-#define MIN 8
+#define MIN 100
 
 
 int main(void)
@@ -29,24 +29,24 @@ int main(void)
 	DDRD = 0x00; // input
 	PORTD |= (1<<PD2); // pull-up
 	
-	DDRB  = 0xFF; // output
-	PORTB = 0x00; // 0
-	_delay_ms(500);
+	DDRB  = 0x7F; // output 
+	PORTB = 0x7F; // high
+	// _delay_ms(500);
 	
 	noppa = 0;
 	run   = 0;
-	i     = sizeof(dly)/2;
+	i     = sizeof(dly)/sizeof(dly[0]); // 12*2/2 2/4 bytes per int
 	
 	rnd = 0;
-	num = rand() % 6;
 
 
 	while (1)
 	{
 		// if (!S1)
-		if (PIND & (1<<PD2))
+		// if (PIND & (1<<PD2))
+		if (!PIND.2) // high -> low btn
 		{
-			run = MIN + rnd % 32;
+			run = MIN + rnd % 7; // 0-6 run 100-106
 			_delay_ms(200);
 		}
 
@@ -60,29 +60,17 @@ int main(void)
 			}
 		}
 
-		_delay_ms(200);
-		PORTB = taulukko[noppa];
-		_delay_loop_1(200);
+		// _delay_ms(200);
+		PORTB = taulukko[noppa]; // when run == 0
+		_delay_loop_1(200); // 3x ck cycle x200
 		rnd++;
 		
-		if (run > 0 && run < i + 1)
+		if (run > 0 && run < i + 1) // 1-12
 		{
-			_delay_loop_1(dly[run - 1]);
+			_delay_loop_1(dly[run - 1]); // run-- longer delay
 		}
 
 	}
 
 	return 0;
 }
-
-/*
-      attiny23
-s1-> pd2 -> pin6
-a -> 7 → PB0 -> pin12
-b → 6 -> PB1 -> pin13
-c → 4 -> PB2 -> pin14
-d → 2 -> PB3 -> pin15
-e → 1 -> PB4 -> pin16
-f → 9 -> PB5 -> pin17
-g → 10 -> PB6 -> pin18
-*/
