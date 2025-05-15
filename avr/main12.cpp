@@ -1,4 +1,4 @@
-#define F_CPU 1000000UL
+#define F_CPU 8000000UL //8Mhz each cycle is 125 nanosec each delay_loop iteration 3xck 3x125xdelay
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -35,37 +35,37 @@ int main(void)
 	
 	noppa = 0;
 	run   = 0;
-	i     = sizeof(dly)/sizeof(dly[0]); // 12*2/2 2/4 bytes per int
+	i     = sizeof(dly)/sizeof(dly[0]); // 12*2/2 int 2/4 bytes 
 	
-	rnd = 0;
+	rnd = 0; // increment every 75ms
 
 
 	while (1)
 	{
 		// if (!S1)
 		// if (PIND & (1<<PD2))
-		if (!PIND.2) // high -> low btn
+		if (!PIND.2) // btn high -> low asynchronous with the loop, appears random
 		{
-			run = MIN + rnd % 7; // 0-6 run 100-106
-			_delay_ms(200);
+			run = MIN + rnd % 32; // 'roll' 100+0 100+1..131 7.5ms-8.9ms
+			PORTB = taulukko[noppa]; // if btn each cycle run-- -> 0 stop at current
+			// _delay_ms(200);
 		}
 
 		if (run)
 		{
-			run--;
-			noppa++;
-			if (noppa == 6)
+			run--; // hit 0 before 255
+			noppa++; // 1 2...7
+			if (noppa == 7)
 			{
 				noppa = 0;
 			}
 		}
 
 		// _delay_ms(200);
-		PORTB = taulukko[noppa]; // when run == 0
-		_delay_loop_1(200); // 3x ck cycle x200
-		rnd++;
+		_delay_loop_1(200); // run>12 200 iterations 125x3x200 -> 75 microsec/us 8-bit counter up to 256
+		rnd++; // 1 cycle 0-255 256->0 every 256x75=19.2milliseconds/ms 
 		
-		if (run > 0 && run < i + 1) // 1-12
+		if (run > 0 && run < i + 1) // 1-12 <=12
 		{
 			_delay_loop_1(dly[run - 1]); // run-- longer delay
 		}
