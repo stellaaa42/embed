@@ -1,5 +1,6 @@
+// attiny85 pin6-> arduino 1
 const byte Btn = 3;
-const byte alarm = 6;
+const byte alarm = 1;
 
 
 void setup() {
@@ -9,6 +10,6 @@ void setup() {
 
 void loop() {
     if (digitalRead(Btn) == HIGH) {
-        digitalWrite(alarm) == HIGH
+        digitalWrite(alarm) == HIGH;
     }
 }
