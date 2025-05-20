@@ -34,7 +34,8 @@ int main(void)
 	
 	nop = 0;
 	run   = 0;
-	i     = sizeof(dly)/2; // 12*2/2 int 2/4 bytes
+	// i = sizeof(dly)/2; // 12*2/2 int 2/4 bytes
+	i = sizeof(dly)/sizeof(dly[0]); // 12*2/2 int 2/4 bytes
 	
 	rnd = 0; // pseudorandom 8-bit linear feedback shift register/XOR change bits
 	// 2^8	at most 255 non-zero
@@ -43,14 +44,14 @@ int main(void)
 
 	while (1)
 	{
-		// lightshow
-		for (i = 0; i < 6; i++)
+		if (S1) // btn high -> low, asynchronous with the loop, appears random
 		{
-			PORTB = taulukko[i];
-			_delay_ms(50);
-		}
-		if (PIND & (1<<PD2)) // btn high -> low, asynchronous with the loop, appears random
-		{
+					// lightshow
+			for (i = 0; i < 6; i++)
+			{
+				PORTB = taulukko[i];
+				_delay_ms(50);
+			}
 			run = MIN + rnd % 32; // 'roll' 100+0 100+1..131 7.5ms-8.9ms
 			PORTB = taulukko[nop]; // display current, when run-- -> 0 stop at that num
 			_delay_ms(300);
