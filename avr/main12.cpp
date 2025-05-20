@@ -47,13 +47,13 @@ int main(void)
 		for (i = 0; i < 6; i++)
 		{
 			PORTB = taulukko[i];
-			_delay_ms(100);
+			_delay_ms(50);
 		}
 		if (PIND & (1<<PD2)) // btn high -> low, asynchronous with the loop, appears random
 		{
 			run = MIN + rnd % 32; // 'roll' 100+0 100+1..131 7.5ms-8.9ms
 			PORTB = taulukko[nop]; // display current, when run-- -> 0 stop at that num
-			_delay_ms(500);
+			_delay_ms(300);
 		}
 
 		if (run)
