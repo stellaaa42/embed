@@ -1,3 +1,13 @@
+# arduino as in system programming
+
+## Sketch -> Upload using programmer
+    chip -> Attiny85
+    port -> Arduino Uno
+    clock -> internal 8 MHz
+    processor -> Attiny85
+    programmer -> 'Arduino as ISP'
+
+
 # arduino-cli
 
 ## Mac
