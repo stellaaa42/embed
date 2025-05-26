@@ -22,11 +22,20 @@ void setup() {
 }
 
 void loop() {
-    // val = analogRead(btn);
+//  val = analogRead(btn);
     val = digitalRead(btn);
 //    mySerial.println(val);
-    delay(200);
+//    delay(200);
 
     digitalWrite(led, val);
-    digitalWrite(buzzer, val);
+
+    for (int i=0; i<=4; i++)
+    {
+      digitalWrite(buzzer, val);
+      delay(500);
+      digitalWrite(buzzer, LOW);
+      delay(500);
+    }
+
+    delay(2000);
 }
