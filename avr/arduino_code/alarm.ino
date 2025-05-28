@@ -1,41 +1,36 @@
-
-#include <SoftwareSerial.h>
-const int rx=3;
-const int tx=4;
-SoftwareSerial mySerial (rx, tx);
-
-// attiny85 pin3 - arduino A2, pin2-arduinoA3, pin1-reset, pin7-arduinoA1
-// pin5 - arduino 0 pwm
-// pin6 - arduino 1 pwm
-int btn = A2;
-const byte led = 1;
-const byte buzzer = 0;
-
-int val = 0;
+// attiny85 pin3 - arduino4&a2
+// pin5 - arduino0 
+// pin6 - arduino1
+// pin2-arduino3&a3, pin1-reset, pin7-arduino2pin2-arduino3, pin1-reset, pin7-arduino2&a1
+const int motion = 4;
+const int led = 1;
+const int buzzer = 0;
 
 
 void setup() {
-//    mySerial.begin(9600);
-    pinMode(btn, INPUT);
+    pinMode(motion, INPUT);
     pinMode(led, OUTPUT);
     pinMode(buzzer, OUTPUT);
 }
 
 void loop() {
-//  val = analogRead(btn);
-    val = digitalRead(btn);
-//    mySerial.println(val);
-//    delay(200);
+    int val = digitalRead(motion);
 
-    digitalWrite(led, val);
+    if (val== HIGH) {
+      for (int i=0; i<=2; i++)
+      {
+        digitalWrite(buzzer, HIGH);
 
-    for (int i=0; i<=4; i++)
-    {
-      digitalWrite(buzzer, val);
-      delay(500);
-      digitalWrite(buzzer, LOW);
-      delay(500);
+        for (int j = 0; j < 5; j++) {  
+          digitalWrite(led, HIGH);
+          delay(100);
+          digitalWrite(led, LOW);
+          delay(100);
+        }
+        digitalWrite(buzzer, LOW);
+      }
+    } else {
+        digitalWrite(led, HIGH);
+        digitalWrite(buzzer, LOW);
     }
-
-    delay(2000);
 }
