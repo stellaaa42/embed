@@ -1,24 +1,24 @@
 // attiny85 - arduino
-// pin3 - arduino4&a2
-// pin7 - arduino2
-// pin2 - arduino3&a3
-// pin1-reset, pin6 - arduino1, pin2-arduino3, pin1-reset, pin7-arduino2&a1, pin5 - arduino0
-uint8_t motion = A2;
-uint8_t sw = 2;
-uint8_t base = 3;
+// pin3 - arduino4&a2 ldr
+// pin5 - arduino0 sw
+// pin6 - arduino1 base led
+// pin1-reset, pin7 - arduino2, pin2 - arduino3&a3, pin2-arduino3, pin1-reset, pin7-arduino2&a1
+uint8_t ldr = A2;
+uint8_t sw = 0;
+uint8_t base = 1;
 uint8_t swVal;
 uint8_t sensorVal;
 uint8_t outpVal;
 
 void setup() {
-    pinMode(motion, INPUT);
+    pinMode(ldr, INPUT);
     pinMode(sw, INPUT);
     pinMode(base, OUTPUT);
 //    Serial.begin(9600);
 }
 
 void loop() {
-    sensorVal = analogRead(motion);
+    sensorVal = analogRead(ldr);
     swVal = digitalRead(sw);
     outpVal = map(sensorVal, 900, 0, 0, 255);
 //    Serial.print(swVal);
