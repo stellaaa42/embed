@@ -21,15 +21,24 @@ void loop() {
     sensorVal = analogRead(ldr);
     swVal = digitalRead(sw);
     outpVal = map(sensorVal, 900, 0, 0, 255);
+// for testing:
+//    digitalWrite(base,HIGH);
+//    delay(200);
+//    digitalWrite(base,LOW);
+//    delay(100);
+    
 //    Serial.print(swVal);
 //    Serial.print("\t");
 //    Serial.print(sensorVal);
 //    Serial.print("\t");
 //    Serial.println(outpVal);
 //    delay(500);
-    if (swVal == HIGH && outpVal > 200) {
+
+    if (swVal == HIGH && outpVal > 228) {
       digitalWrite(base, HIGH);
     } else {
       digitalWrite(base, LOW);
     }
+
+
 }
