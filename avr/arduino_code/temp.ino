@@ -7,7 +7,10 @@
 #define AVERAGING_VALUES_COUNT 5 
 #define ONE_WIRE_BUS 3			//Määritellään OneWire pinni
 
-const byte rs = 9, en = 8, d4 = 7, d5 = 6, d6 = 5, d7 = 4;	//Määritellään LCD näytön pinnit
+// sch_uno: const int rs=9, en=8, d4=7, d5=6, d6=5, d7=4;
+// sch: 18, 14, 13, 12, 11, 8; 
+// sch0_uno: const int rs=2, en=10, d4=11, d5=12, d6=13, d7=4;
+const byte rs=2, en=10, d4=11, d5=12, d6=13, d7=4;	//Määritellään LCD näytön pinnit
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 OneWire oneWire(ONE_WIRE_BUS);
