@@ -350,3 +350,51 @@ auto x = find_if(vr.begin(), vr.end(),
 
 auto earlyUsersEnd = std::remove_if(users.begin(), users.end(),
                         [](const User &a) { return a.id > 100; });
+
+lval: var, array ele, class, func caller/return by ref
+    int a = 42;
+    int* p =&a;
+    *p = 20; ->lval(refer to 'a')
+        struct Foo { int x; };
+        Foo f;
+        f.x = 42;
+            int& getRef() {
+                static int a = 42;
+                return a;
+            }
+            getRef() = 5;
+rval: literal 5, str, temp res, func return val, casting
+    int a = 10; a->lval->prval
+    int&& r = std::move(a); a->rval->xval(expiring val)
+
+f(X x) local caller can modify, but f(x) cant change caller val, can copy move, lval+rval->small
+f(X& x) reference to an lval(persistent), no copy, can modify, cant rval->in/out paras
+f(const X& x) rval+lval, no copy, read-only, can rval, cant modify->no modifying
+f(X&& x) rval(temporary), can modify, can move, cant copy, cant lval->move
+
+template <typename T>
+void f(T&& t);
+T->X& T&&->X& lval, modifies
+T->X T&&->X&& rval ref, move
+
+void f1(const string& s); //cheap
+void f2(int x); //small
+
+int multiply(int, int);
+string& concatenate(string&, const string& suffix);
+void sink(unique_ptr<widget>);
+
+void update(Record& r); //in-out, to be modified
+
+void increment_all(span<int> a) //cheap to copy and passed by val
+{
+    from (auto&& e : a) //mutable(in-out) ref semantics
+        ++e;
+}
+
+template<class T>
+void sink(std::unique_ptr<T> p) // sink->owner, unique_ptr->move-only
+{
+    // std::move(p)
+    // destroy p
+}
