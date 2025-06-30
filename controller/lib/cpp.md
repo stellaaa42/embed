@@ -184,6 +184,10 @@ class Shape
  class widget
  {
     class impl;
+    // unique_ptr 
+    // sole ownership of a dynamically allocated object
+    // move-only, cant be copied
+    // if out of scope, auto delete the object it manages
     std::unique_ptr<impl> pimpl;
  public:
     void draw();
@@ -287,7 +291,7 @@ vector<string> collect(istream& is) noexcept
 void f(int*); // any int*
 void g(unique_ptr<int>); //only transfer ownership
 void g(shared_ptr<int>); // only share
-void h(const unique_str<int>&); // receive ownership
+void h(const unique_ptr<int>&); // receive ownership
 void h(int&); // any int
 
 void f(widge& w)
@@ -382,6 +386,8 @@ void f2(int x); //small
 
 int multiply(int, int);
 string& concatenate(string&, const string& suffix);
+// input only, transfers ownership of the widget to the sink func
+// after calling sink, the caller no longer owns/uses the resource
 void sink(unique_ptr<widget>);
 
 void update(Record& r); //in-out, to be modified
@@ -393,8 +399,208 @@ void increment_all(span<int> a) //cheap to copy and passed by val
 }
 
 template<class T>
-void sink(std::unique_ptr<T> p) // sink->owner, unique_ptr->move-only
+// new owner -> sink
+void sink(std::unique_ptr<T> p) 
 {
-    // std::move(p)
-    // destroy p
+    // std::move(p) -> onward to somewhere else
+    // unique_ptr empty, sink should destroy it when out of scope
+    // destroy p (del the obj)
 }
+
+void foo(std::string&& s)
+{
+    // not use(s);
+    // s->lval, needs to be casted to rval thru move()
+    use(std::move(s));
+    // after moved, the state is valid but unspecified cant std::cout << s;
+    // need to explicitly reinitialize it or dont touch it again
+}
+
+// use TP&& to forward
+// its temp obj that lives the duration of func calls
+// pass to codes that dont care about the const-ness/rval-ness
+template<class F, class... Args>
+inline decltype(auto) invoke(F&& f, Args&&... args)
+{
+    return forward<F>(f)(forward<Args>(args)...);
+}
+
+// forward a composite parameter piecewise
+template<class PairLike>
+inline auto test(PairLike&& pairlike)
+{
+    // forward .first
+    f1(some, args, and, forward<PairLike>.first);
+    // forward .second
+    f2(and, forward<PairLike>(pairlike).second, in, another, call);
+}
+
+// return output val not parameters
+// dont: void find_all(const vector<int>&, vector<const int*>& out, int x); // x in-out
+// instead: return out val
+vector<const int*> find_all(const vector<int>&, int x);
+
+// return result/unique_ptr if non-concrete types
+std::vector<const int*> find_all(const std::vector<int>& v, int x)
+{
+    std::vector<const int*> result;
+    for (const int& i : v)
+    {
+        if (i == x)
+            result.push_back(&i);
+    }
+    return result;
+}
+
+//move operation
+class Matrix 
+{
+    public:
+        Matrix() = default;
+        Matrix(const Matrix&) = default;
+        Matrix(Matrix&&) noexcept = default;
+        Matrix& operator = (const Matrix&) = default;
+        Matrix& operator = (Matrix&&) noexcept = default;
+    private:
+        // vector has move op
+        std::vector<double> elements;
+};
+Matrix operator+(const Matrix& a, const Matrix& b)
+{
+    Matrix res;
+    // sum res
+    // return value optimiztion(rvo)
+    // construct val directly in it s final loc
+    return res;
+}
+// rvo else call Matrix(Matrix&&) move constructor
+// transfer ownershiop of resources(elements vector), no copying
+Matrix x = m1 + m2;
+// y existing obj -> complier calls Matrix& operator=(Matrix&&) move assignment
+// release resource y, take temp resource
+y = m3 + m3;
+
+// small cheap-to-ret types
+// dont: void val(int&); 
+// Is it reading/writing from/to its arg/res
+int val();
+
+// prefer return-by-value over non-const reference output parameters
+// except:
+// expensive-to-move obj
+struct Package
+{
+    char header[16];
+    cahr load[2024 - 16];
+};
+// dont: Packge fill(); // large val
+// instead: non-const ref as out, constuct Package in-place, no moves/copies
+void fill(Package& p); 
+
+// return multiple as a struct
+struct min_res { int status; string data; };
+min_res f(const string& inp)
+{
+    return { status, sth()};
+}
+
+// c++98
+pair<set::iterator, bool> result = my_set.insert("Hello");
+if (result.second)
+    do_sth(result.first)
+//c++17
+if (auto [ iter, success ] = my_set.insert("hello"); success)
+    do_sth(iter);
+
+//T&
+// std::operator >> ()
+istream& operator>>(istream& in, string& s);
+
+// dont pass all val as ret 
+<!-- 
+struct get_str_res {istream& in; string s; }
+{
+    string s;
+    in >> s;
+    return { in move(s)};
+} 
+// less elegant/perfomance
+for (auto [in, s] = get_str(cin); in; s=get_str(in).s)
+{
+}
+-->
+
+// both s/in -> in-out param
+// in->manipulate state
+// s->avoid repeated alloc, reuse, alloc new mem only when need to expand s
+for (string s; in >> s; ) 
+{
+}
+
+// ret spec, user-defined type
+struct Distance {
+    int val;
+    int unit=1;
+}
+Distance d1 = measure(obj1);
+auto d2 = measure(obj2);
+// dont: pair tuple used not when abstracted, confusing
+// auto [val, unit] = measure(obj3);
+// auto [x, y] = measure(obj4);
+// instead: when represent independent entities/ or optional<T>, expected<T, error_code>
+std::pair<int, int> dimensions() { return {640, 480}; }
+
+// move->avoid copying
+pair<LargeObj, LargeObj> f(const string& input)
+{
+    LargeObj large1 = g(inp);
+    LargeObj large2 = h(inp);
+    return { move(large1), move(large2) };
+}
+
+// no copies, no move
+pair<LargeObj, LargeObj> f(const string& inp)
+{
+    return { g(inp), h(inp) };
+}
+
+// T* over T& when 'no arg' is valid
+// T* can be nullptr, T& cant
+// zstring->char*, can be nullptr
+string zstr_to_str(zstring p)
+{
+    if (!p) return str{};
+    return str{p};
+}
+// vector& cant be nullptr, code is simpler
+void print(const vector<int>& r)
+{
+    // r->vector<int>, no need to check
+}
+
+// T* owner<T*>
+// dont: range error, 0-terminated array of char, *q free store
+<!-- 
+void use(int* p, int n, char* s, int* q)
+{
+    p[n-1]=666;
+    cout << s;
+    delete q;
+}
+-->
+void use(span<int> p, zstring s, owner<int*> q)
+{
+    p[p.size() - 1] = 666;
+    cout << s;
+    delete q;
+}
+
+// not_null<T>
+int length(not_null<Record*> p);
+int length(Record* p);
+
+// span<T> span_p<T>
+X* find(span<X> r, const X& v);
+vector<X> vec;
+// find x{} in vec
+auto p = find({vec.begin(), vec.end()}, x{});
