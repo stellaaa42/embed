@@ -211,7 +211,8 @@ class Shape
  widget::~widget() = default;
  widget& widget::operator={widget&&} noexcept = default;
 
-class Istream { [[gsl::suppress("lifetime)]]
+class Istream { 
+// [[gsl::suppress("lifetime)]]
 public:
     enum Opt { from_line = 1};
     Istream() {}
@@ -517,7 +518,7 @@ if (auto [ iter, success ] = my_set.insert("hello"); success)
 istream& operator>>(istream& in, string& s);
 
 // dont pass all val as ret 
-<!-- 
+/*
 struct get_str_res {istream& in; string s; }
 {
     string s;
@@ -528,7 +529,7 @@ struct get_str_res {istream& in; string s; }
 for (auto [in, s] = get_str(cin); in; s=get_str(in).s)
 {
 }
--->
+*/
 
 // both s/in -> in-out param
 // in->manipulate state
@@ -580,14 +581,15 @@ void print(const vector<int>& r)
 
 // T* owner<T*>
 // dont: range error, 0-terminated array of char, *q free store
-<!-- 
-void use(int* p, int n, char* s, int* q)
+// void use(int* p, int n, char* s, int* q)
+/*
 {
     p[n-1]=666;
     cout << s;
     delete q;
-}
--->
+} 
+*/
+
 void use(span<int> p, zstring s, owner<int*> q)
 {
     p[p.size() - 1] = 666;
@@ -600,7 +602,185 @@ int length(not_null<Record*> p);
 int length(Record* p);
 
 // span<T> span_p<T>
+// find v in r, expects a span(explicit range)
 X* find(span<X> r, const X& v);
-vector<X> vec;
+
 // find x{} in vec
-auto p = find({vec.begin(), vec.end()}, x{});
+vector<X> vec;
+// dont: auto p = find({vec.begin(), vec.end()}, x{});
+auto p = find(std::span(vec), x{});
+
+// span->a range of elements
+// dont: c traversal/random access/extract pointer
+// span knows its size->safer than raw pointer, but potentially need bound-checked
+void f(span<int> s)
+{
+    // dont: for (gsl::index i=0; i<s.size(); ++i) cout << s[i] << '\n';
+    // dont: s[7] = 9;
+    for (int x : s) cout<< x << '\n';
+    // dont: std::sort(&s[0], &s[s.size() / 2]);
+    std::ranges::sort(s.subspan(0, s.size() / 2));
+}
+
+// zstring not_null<zstring>->null termination C-style string
+// string_view for no null termination
+int length(zstring p);
+int length(not_null<zstring> p);
+
+// unique_ptr<T>->transfer ownership from T to ptr dynamically
+// cheapest way to pass a pointer safely, cant be copied, only moved
+// no need to delete, no leaks if exception
+unique_ptr<Shape> get_shape(istream& is)
+{
+    auto kind = read_header(is);
+    switch (kind) 
+    {
+        case kCircle:
+            // dynamically allocate Circle(constructed from istream& is) on the heap
+            // and return std::unique_ptr<Shape> ptr
+            return make_unique<Circle>(is);
+        case kTriangle:
+            return make_unique<Triangle>(is);
+        default:
+            throw std::runtime_error("Unknown Shape Kind");
+    }
+}
+
+// shared_ptr<T>->shared, the last owner deletes the obj
+// ensure the last thread to finish safely deletes the image
+{
+    shared_ptr<const Image> im {read_image(somewhere)};
+    std::thread t0 {shade, args0, top_left, im};
+    std::thread t1 {shade, args1, top_right, im};
+    std::thread t2 {shade, args2, bottom_left, im};
+    std::thread t3 {shade, args3, bottom_right, im};
+    // detaching threads(join before main ends)
+}
+
+// return T* only to indicate a position, not tranfering ownership
+// dont delete, its owned by the binary tree
+Node* find(Node* t, const string& s)
+{
+    // ->: (*pointer).member
+    if (!t || t->name == s) return t;
+    if ((auto p = find(t->left, s))) return p;
+    if ((auto p = find(t->right, s))) return p;
+    return nullptr;
+} 
+
+// dont ret a ptr, ref to a local obj->dangling ptr
+// when returns, its destroyed, yet the address is handed back to the caller
+// access to the ptr afterwards is undefined
+/*
+int* f()
+{
+    int fx = 9;
+    // address of local obj
+    return &fx;
+}
+void g(int* p)
+{
+    // gx == *p, *p refer to the space occupied by gx, reads/writes to gx
+    int gx;
+    *p = 999;
+}
+void h()
+{
+    int* p = f();
+    int z = *p;
+    // gx reuses the abandoned stack mem by calling f(), as fx in f()
+    g(p);
+}
+// ref ret addr refer to destroyed stack mem
+int& f()
+{
+    int x = 7;
+    return x;
+}
+*/
+// static local var ok, except for multi-threaded
+int* f()
+{
+    static int x = 7;
+    return &x;
+}
+/*
+// lambdas->less obvious leak
+int* glob;
+template<class T>
+// T->anything callable with x() lambda, ptr, func
+void steal(T x)
+{
+    // ptr stored globally, bad
+    glob = x();
+}
+void f()
+{
+    int i = 99;
+    // i address captured by a lambda and pass out to steal()
+    // [&]->captures all local var by ref(i)
+    // return the address of i
+    steal([&] {return &i;});
+}
+int main()
+{
+    // once f() returns, i mem gone, glob holds a ptr to dead mem
+    f();
+    cout << *glob << '\n';
+}
+*/
+void f()
+{
+    int i = 99;
+    // capture by val, return val
+    steal([=] {return i;})
+}
+
+// ret T& when no copy, no need for 'ret no obj'/theres obj to return
+// no need to check for nullptr
+class Car
+{
+    array<wheel, 4> w;
+public:
+    // expects->index valid
+    wheel& get_wheel(int i) {Expects(i<w.sizes()); return w[i];}
+}
+void use()
+{
+    // obj c and ref w0 have the same lifetime
+    // ref to the wheel, no copy
+    Car c;
+    wheel w0=c.get_wheel(0);
+}
+
+// dont return T&&
+// &&->temp
+// only std::move std::forward return &&, and ref passed and got destroyed vore temp destroyed
+/*
+auto&& x = max(0, 1);
+foo(x);
+*/
+template<class F>
+// dont auto&& wrapper(F f)
+auto wrapper(F f)
+{
+    log_call(typeid(f));
+    return f();
+}
+
+// int->ret for main()
+int main()
+{
+    std::cout << "int return main\n";
+}
+
+// ret T& from assignment operators
+class Foo
+{
+    public:
+        Foo& operator=(const Foo& rhs)j
+        {
+            //copy members
+            return *this;
+        }
+};
