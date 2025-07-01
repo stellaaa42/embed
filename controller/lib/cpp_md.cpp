@@ -780,7 +780,156 @@ class Foo
     public:
         Foo& operator=(const Foo& rhs)j
         {
-            //copy members
+            // *this->ret lval ref 
+            // this-> ptr of type Foo*
+            // deref: *this->Foo& ref
+            // non-constant->chain a = b = c
             return *this;
         }
 };
+
+// no ret std::move(local)
+S good()
+{
+    S result;
+    // dont: return std::move(result);
+    // prevents return val optimization, eliminate the move
+    // instead: ret moves the local var
+    return result;
+}
+
+// lambda->capture local var or be defined at local scope when func cant
+// dont overload
+void f(int);
+void f(const string&);
+vector<work> v = lots_of_work();
+for (int tasknum = 0; tasknum < max; ++tasknum)
+{
+    pool.run([=, &v]
+    {
+        // process 1/max-th of v, tasknum-th chunk
+    });
+}
+pool.join();
+
+// default arg over overloading
+// avoid code replication
+void print(const string& s, format f = {});
+
+// capture by ref
+/*
+// dont: large obj(network msg)
+// not efficient/correct to copy
+std::for_each(begin(sockets), end(sockets), [&message](auto& socket))
+{
+    socket.send(message);
+}
+*/
+class stage
+{
+    // func->data member  where data gets stored
+    std::function<void(buffer&)> func;
+public:
+    // std::function->callable wrapper(hold lambda, func ptr obj)
+    // buffer&->params
+    // : func(f)->initializing, copy f val into constructor stage()
+    stage(std::function<void(buffer&)> f) : func(f) {}
+    void process(buffer& b) {func(b);}
+};
+// bufs->ref to a buffers obj
+// pipline: decorate->compress->encrypt
+void send_packets(buffers& bufs)
+{
+    // stage->obj class
+    // encryptor->var
+    // b->param list for lambda, ref to buffer 
+    // [&]->lambda capture
+    // auto& b->ref to ele in bufs
+    stage encryptor([](buffer& b){encrypt(b);});
+    stage compressor([&](buffer& b) {compress(b); encryptor.process(b);});
+    stage decorator([&](buffer& b){decorate(b); compressor.process(b);});
+    for (auto& b : bufs) {decorator.process(b);}
+}
+buffer buf;
+s.process(buf);
+
+// no ref in lambdas in non-local(returned, heap, passed to another thread)
+// outlive the scope of local obj
+int local = 42;
+// dont: thread_pool.queue_work([&] {process{local};});
+// ref->after program exits, local no long exists
+// instead: make a copy/unique_ptr/[*this] ptr whole copy of the obj
+thread_pool.queue_work([=] {process(local);});
+
+// no [=] in lambdas
+class my_class
+{
+    int x = 0;
+    void f()
+    {
+        int i = 0;
+        x = 42;
+        lambda();
+        x = 42;
+        lambda();
+        // dont: auto lambda = [=] {use(i, x);};
+        // looks like copy/val capture when it actually captures this ptr by val
+        // instead: this [*this]->copy of all class data members
+        auto lambda = [i, this] {use(i, x);};
+    }
+}
+
+// va_arg arg
+/*
+dont:
+int sum(...)
+{
+    while ()
+        // assuming it will be int
+        result += va_arg(list, int);
+}
+*/
+// Args->match any types of arg int/double catchall
+template<class ...Args>
+// Args->expands into args, Args-><int, int>, args-><int arg1, int arg2>
+auto sum(Args... args)
+{
+    // fold expression: use binary operator to reduce pack into one single val 
+    // adds up all ele in args using +
+    return (... + args);
+}
+sum(3, 2);
+sum(3.14159, 2.71828);
+
+// shallow nesting, avoid unnecessary condition nesting, return early
+/*
+dont:
+void foo()
+{
+    if (x)
+    {
+        compute(x);
+    }
+}
+void food()
+{
+    if (!x)
+        return;
+    else
+    {
+        compute(x);
+    }
+}
+*/
+void foo()
+{
+    if (!x)
+        return;
+    compute(x);
+}
+void foo()
+{
+    if (!(x&&y))
+        return;
+    compute(x);
+}
