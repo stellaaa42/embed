@@ -356,3 +356,143 @@ class legacy_cls
     std::unique_ptr<foo> m_owning; 
     gsl::owner<foo*> m_owning;
 }
+
+template<typename T>
+class Smart_ptr
+{
+    // T owns *p
+    owner<T*> p;
+public:
+    // copy/move/del
+    ~Smart_ptr() {delete p;}
+};
+void use(Smart_ptr<int> p1)
+{
+    // no double deletion
+    auto p2 = p1;
+}
+
+// base class destructor: 
+// polymorphic: public-virtual
+// non-polymorphic: protected-non-virtual
+class Shape
+{
+public:
+    virtual ~Shape()
+    {
+        std::cout << "Shape destroyed\n";
+    }
+    virtual void draw() const = 0;
+};
+class Circle : public Shape
+{
+public:
+    ~Circle()
+    {
+        std::cout << "Circle destroyed\n";
+    }
+    void draw() const override {std::cout << "Drawing Circle\n";}
+};
+void example()
+{
+    //calls both Shape and Circle destructors
+    Shape* s = new Circle();
+    delete s;
+}
+class FileSystemHandle
+{
+protected:
+    ~FileSystemHandle()
+    {
+        std::cout << "FileSystemHandle destroyed\n";
+    }
+};
+class File : public FileSystemHandle
+{
+public:
+    ~File()
+    {
+        std::cout << "File destroyed\n";
+    }
+};
+void example()
+{
+    // dont: FileSystemHandle* f=new File(); destructor is protected
+    // derived class being deleted
+    File* f = new File();
+    delete f;
+}
+
+// destructor cant fail: noexcept
+class X
+{
+public:
+    ~X() noexcept;
+};
+X::~X() noexcept
+{
+    if (cant_release_a_resource) terminate();
+}
+// dont: if a throwing destructor
+struct Details
+{
+    // might throw exception err
+    ~Details();
+};
+struct X 
+{
+    Details x; 
+    // complier impolicitly noexcept(false)
+    ~X() {}
+};
+// instead: 
+struct Safe
+{
+    ~Safe() noexcept = default;
+};
+struct Safe
+{
+    ~Safe() noexcept
+    {
+        try
+        {} catch ()
+        {}
+    }
+}
+
+//constructor if invariant in cls
+class Date
+{
+    Date(int dd, int mm, int yy)
+        :d{dd}, m{mm}, y{yy}
+    {
+        // enforce invariant
+        // Ensures()
+        if (!is_valid(d, m, y)) throw Bad_date();
+    }
+private:
+    int d, m, y;
+};
+// sometimes no invariant user-defined constructor
+struct Rec
+{
+    string s;
+    // i defaults to 10
+    int i {10};
+    // overloading other options
+    // i defaults to 0
+    Rec(const string& ss) : s{ss} {}
+    // str defaults to empty str
+    Rec(int ii) :i{ii} {}
+};
+// this wont work: Rec r3 {"Foo", 7};
+Rec r1 {7};
+Rec r2 {"Foo bar"};
+// no constructor, complier auto generates one, aggregate
+struct Rec2
+{
+    std::string s;
+    int i {0};
+};
+Rec2 r1 {"Foo", 7};
+Rec2 r2 {"Bar"};
