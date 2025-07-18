@@ -235,3 +235,124 @@ class good
     // val
     std::string s;
 }
+
+// default operations
+// default constructor: X() destructor: ~X()
+// copy constructor: X(const X&) move constructor: X(X&&)
+// copy assignment: operator=(const X&) move assignment: operator=(X&&)
+// the rule of zero: let the complier generate destructor/copy constructor...
+struct Named_map
+{
+public:
+    // no need to copy/move constructor, destructor, compiler handles it
+    explicit Named_map(const string& n) : name(n) {}
+private:
+    // std::string std::map<> stl containers
+    string name;
+    map<int, int> rep;
+};
+// construct
+Named_map nm("map");
+// compiler-generated copy construct
+Named_map nm2 {nm};
+
+// the rule of five: resource manage all special members copy/move/destruct all together
+class AbstractBase
+{
+public:
+    // virtual: can be overridden in derived cls
+    // call thru ref Base& br=b/ptr* Base* bp=&b br.f() bp->f();
+    // non-virtual func call br.Base::f();
+    virtual void foo() = 0;
+    // suppress with =delete
+    virtual ~AbstractBase() = default;
+}
+// protected
+class CloneableBase
+{
+public:
+    virtual unique_ptr<CloneableBase> clone() const;
+    virtual ~CloneableBase() = default;
+    CloneableBase() = default;
+    CloneableBase(const CloneableBase&) = delete;
+    CloneableBase& operator=(const CloneableBase&) = delete;
+    CloneableBase(CloneableBase&&) = delete;
+    CloneableBase& operator=(CloneableBase&&) = delete;
+}
+
+// deep copy: copy obj and memory 
+// shallow copy: only copy obj
+// consistency, dont mix deep and shallow
+class Deep
+{
+    class Impl
+    {
+    public:
+        Impl() = default;
+        Impl(const Impl&) = default;
+        Impl& operator=(const Impl&) = default;
+    };
+    std::shared_ptr<Impl> p;
+public:
+    Deep() : p(std::make_shared<Impl>()) {}
+    Deep(const Deep& a) : p(std::make_shared<Impl>(*a.p)) {}
+    Deep& operator=(const Deep& a)
+    {
+        if (this!=&a)
+            // dont shallow copy: p=a.p;
+            *p = *a.p;
+        return *this;
+    }
+};
+class Shallow
+{
+    class Impl
+    {};
+    std::shared_ptr<Impl> p;
+public:
+    Shallow() : p(std::make_shared<Impl>()) {}
+    Shallow(const Shallow& a) = default;
+    Shallow& operator=(const Shallow& a) = default;
+};
+
+// destructor user-defined:vector/final_action-a cls exits to execute upon destruction
+// otherwise default
+template<typename A>
+struct final_action
+{
+    // final_action owns act() callable
+    A act;
+    final_action(A a) : act{a} {}
+    // on exit, it runs act() 
+    ~final_action() { act(); }
+};
+template<typename A>
+// lambda/callable deduce action type
+final_action<A> finally(A act)
+{
+    return final_action<A>{act};
+}
+void test()
+{
+    //scope_exit()
+    auto act = finally([] {cout<<"Exit test\n";});
+    // run lambda
+    if () return;
+}
+
+// destructor must release resources
+class X
+{
+    // close any file upon X destruction
+    ifstream f;
+}
+
+// ownership raw ptr(T*) ref(T&)
+class legacy_cls
+{
+    bar* m_observer;
+    // dont: foo* m_owning; raw ptr-dont know the owner
+    // legacy_class owns it, it needs to del it
+    std::unique_ptr<foo> m_owning; 
+    gsl::owner<foo*> m_owning;
+}
