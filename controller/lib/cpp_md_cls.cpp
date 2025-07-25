@@ -496,3 +496,270 @@ struct Rec2
 };
 Rec2 r1 {"Foo", 7};
 Rec2 r2 {"Bar"};
+
+// constructor needs a fully initialized obj/order
+class X1
+{
+    File* f;
+public:
+    // dont: X1() {} void init(); void read();
+    // crash read if wrong order read()->init()
+    // void f()
+        // {
+        //     X1 file;
+        //     file.read(); // crash/bad read
+        //     file.init(); // too late
+        // }
+    X1(const char* filename) {
+        f = fopen(filename, "r");
+        if (!f) throw std::runtime_error("Failed to open file");
+    }
+    void read()
+    {
+        // safe read
+    }
+    ~X1()
+    {
+        if(f) fclose(f);
+    }
+};
+X1 file("data.txt");
+file.read();
+// use factory func to construct if cannot be constructored by a constructor
+// factory->abstract obj, flexible, can delay logic, add config, hides constructor
+class X1
+{
+    File* f;
+    // private constructor
+    X1(FILE* file) : f(file) {}
+public:
+    // static factory method to create a fully initialized obj
+    static X1 create(const char* filename)
+    {
+        FILE* file = fopen(filename, "r");
+        if (!file) throw std::runtime_error("Cannot open file");
+        return X1(file);
+    }
+    void read()
+    {
+        // safe read
+    }
+    ~X1()
+    {
+        if(f) fclose(f);
+    }
+}
+X1 file=X1::create("data.txt");
+file.read();
+
+// throw an exception for invalid obj
+class X3
+{
+    FILE* f;
+    // dont: no exception, 
+    // non-valid obj, f==nullptr 
+    // always have to call is_valid()
+    bool valid;
+public:
+    X3(const string& name)
+        :f{fopen(name.c_str(), "r")}, valid{false}
+    {
+        if(f) valid = true;
+    }
+    bool is_valid() {return valid;}
+    void read();
+};
+void f()
+{
+    X3 file {"Heraclides"};
+    // dont: file.read(); crash read() called on invalid obj, dereferencing a null pointer
+    if (file.is_valid())
+    {
+        file.read();
+    } 
+    else {
+        // handle error
+    }
+}
+class X2
+{
+    FILE* f;
+public:
+    X2(const string& name)
+        :f{fopen(name.c_str(), "r")}
+    {
+        // throw exception
+        if (!f) throw runtime_error{"Could not open" + name};
+    }
+    ~X3()
+    {
+        if (f) fclose(f);
+    }
+    void read(){};
+    // disable copy X3 b=a; compile error
+    // X3 manages raw resource(FILE* f), cant be shared/copied
+    X3(const X3&) = delete;
+    X3& operator=(const X3&)=delete;
+};
+void f()
+{
+    try {
+        X2 file {"Zeno"};
+        file.read();
+    } catch (const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+}
+
+// a copyable class has a default constructor
+class Date
+{
+    // private default
+    int dd {1};
+    int mm {1};
+    int yyyy {1970};
+public:
+    Date(int dd, int mm, int yyyy);
+    Date() = default;
+};
+vector<Date> vd1(1000);
+// with default
+vector<Date> vd2(1000, Date(7, Month:October, 1885));
+// 
+struct X 
+{
+    string s;
+    vector<int> v;
+    // dont: int i; X x; X{{}, {}}; empty str/vector
+    // X.s initialized, but i not, built-in type
+    // instead: default to 0
+    int i {};
+};
+void f()
+{
+    X x;
+    cout << x.s << ' ' << x.i << '\n';
+    ++x.i;
+}
+// no default == not copyable
+// abstract base cls, not copyable, no need fro default
+struct Shape
+{
+    virtual void draw() = 0;
+    virtual void rotate(int) = 0;
+    // delete copy/move func
+}
+std::mutex mx;
+//dont: std::lock_guard<std:mutex> g2; mutex not copyable type, no default 
+// resource-owning, not value-like RAII types: std::unique_ptr, std::ofstream, no default, 
+// non-copyable, default cause invalid/unsafe states
+std::lock_guard<std::mutex> g {mx};
+// special state -> default
+// 'not open' state
+ofstream out {"Foobar"};
+out << log(time, transaction);
+
+// default: simple non-throwing
+// template: generic type unknown, func, cls, var
+template<typename T>
+class Vector0
+{
+    own<T*> elem;
+    T* space;
+    T* last;
+public:
+    // dont: Vector0 : Vector0{0} {} empty state wasteful allocates to new T[0]
+    // every default causes heap alloc Vector0<int> v[100] 100 allocs
+    // cheap: set to {nullptr, nullptr, nullptr} no alloc, only set ptr, 0 allocs
+    Vector0() noexcept {}
+    Vector0(int n) : elem{new T[n]}, space{elem + n}, last{elem} {}
+}
+
+// use default member initializers for only initializing data members, dont use default constructor
+// dont: string s; public: X1() : s{"default"}, i{i}, {}
+class X2
+{
+    string s {"default"};
+    int i {1};
+public:
+    // complier generated default constructor
+}
+
+// declare single-arg constructors explicit
+class String
+{
+public:
+    // dont: String(int) String s=10 str of size 10 surprise
+    // if called with single arg, be marked explicit
+    explicit String(int)=default;
+};
+String s = String{10};
+
+// define and initialize same order
+class Foo
+{
+    int m1;
+    int m2;
+public:
+    // dont: Foo(int x) : m2{x}, m1{++x} {} Foo x(1); x.m1 == x.m2 = 2
+    Foo(int x) : m1{x}, m2{++x} {}
+};
+
+// constant initializer: prefer default member initializer over constructor
+class X2
+{
+    int i {666};
+    string s {"qqq"};
+    int j {0};
+public:
+    // dont: X() :i{666}, s{"qqq"} {} j uninitialized s=""
+    // instead default; all initialized
+    X2() = default;
+    X2(int ii) :i{ii} {}
+}
+
+// prefer initialization to assignment
+class A 
+{
+    string s1;
+public:
+    // dont: B(const char* p) {s1=p;}
+    // dont: int* p; public: C() {cout<<*p; p=new int{10};} use before initialized
+    A(czstring p) : s1{p} {}
+    D(string_view v) : s1{v} {}
+}
+
+// use factory for virtual(base depends on derived) initialization
+class B 
+{
+protected:
+    class Token {};
+public:
+    explicit B(Token) {}
+    virtual void f() = 0;
+    template<class T>
+    static shared_ptr<T> create()
+    {
+        auto p=make_shared<T>(typename T::Token{});
+        p->post_initialize();
+        return p;
+    }
+protected:
+    virtual void post_initialize()
+    {
+        f();
+    }
+};
+class D : public B 
+{
+protected:
+    class Token {};
+public:
+    explicit D(Token) : B{B::Token{}} {}
+    void f() override {};
+protected:
+    template<class T>
+    friend shared_ptr<T> B::create();
+};
+shared_ptr<D> p = D::create<D>();
