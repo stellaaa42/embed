@@ -734,20 +734,25 @@ public:
 class B 
 {
 protected:
+    // token inner class as constructor access control
     class Token {};
 public:
     explicit B(Token) {}
     virtual void f() = 0;
     template<class T>
+    // no create virtual directly, create() obj-> post_initialize() to get virtual f()
     static shared_ptr<T> create()
     {
+        // controlled instantiation make_shared<T> T::Token
         auto p=make_shared<T>(typename T::Token{});
+        // safe virtual call f()
         p->post_initialize();
         return p;
     }
 protected:
     virtual void post_initialize()
     {
+        // called after fully construction to allow derived cls behavior
         f();
     }
 };
@@ -760,6 +765,52 @@ public:
     void f() override {};
 protected:
     template<class T>
+    // friend: only B:create() can access tokens
+    // B::create<T> <- make_shared<T> T::Token
     friend shared_ptr<T> B::create();
+    static_assert(std::is_base_of<B, T>::value, "T must derive from B");
 };
 shared_ptr<D> p = D::create<D>();
+
+// use delegating constructors to represent all cls constructors common actions
+// avoid repetition
+class Date 
+{
+    int d;
+    Month m;
+    int y;
+public:
+    Date(int dd, Month mm, year yy)
+        :d{dd}, m{mm}, y{yy}
+        { if (!valid(d, m, y)) throw Bad_date{};}
+    Date(int dd, Month mm)
+        :Date{dd, mm, current_year()} {}
+}
+
+// use inheriting constructors to import constructors into a derived cls
+// that needs no further explicit initialization
+// derived cls adds no new members
+class Rec
+{
+public:
+    Rec(std::string, int) {}
+    Rec(double) {}
+};
+class Oper : public Rec 
+{
+    using Rec::Rec;
+};
+// when adding new member: define own constructors
+struct Rec 
+{
+    std::string name;
+    int id;
+    Rec(std::string n, int i) : name(n), id(i) {}
+};
+struct Rec2 : public Rec 
+{
+    int x;
+    Rec2(std::string n, int i, int x_) : Rec(n, i), x(x_) {}
+};
+Rec2 r{"foo", 7, 42};
+int val = r.x; //42
